@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Ghép Chữ - Coldbrew Prize</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #e50914 0%, #221f1f 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #333;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            max-width: 900px;
+            width: 100%;
+            text-align: center;
+            position: relative;
+            border: 3px solid #e50914;
+        }
+
+        .title {
+            color: #e50914;
+            font-size: 2.2em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1.1em;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .tab-buttons {
+            display: flex;
+            margin-bottom: 30px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 15px;
+            background: #f0f0f0;
+            border: none;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(45deg, #e50914, #b20710);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .letters-display {
+            font-size: 2.5em;
+            margin: 20px 0;
+            padding: 20px;
+            background: linear-gradient(45deg, #f8f9ff, #e8f4f8);
+            border-radius: 15px;
+            border: 3px solid #e50914;
+            letter-spacing: 15px;
+            font-weight: bold;
+            color: #e50914;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .game-rules {
+            background: #fff3cd;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 5px solid #ffc107;
+            margin: 20px 0;
+            text-align: left;
+        }
+
+        .progress-bar {
+            background: #f0f0f0;
+            border-radius: 10px;
+            height: 25px;
+            margin: 20px 0;
+            overflow: hidden;
+            border: 2px solid #e50914;
+        }
+
+        .progress-fill {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            height: 100%;
+            width: 0%;
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .words-found {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .word-slot {
+            padding: 12px;
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            background: #f8f9fa;
+            font-weight: bold;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .word-slot.found {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            color: white;
+            border: 2px solid #28a745;
+            transform: scale(1.05);
+        }
+
+        .word-slot.master {
+            border: 3px solid #ffc107;
+            background: linear-gradient(45deg, #ffc107, #fd7e14);
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.3em;
+            border: 3px solid #e50914;
+            border-radius: 10px;
+            outline: none;
+            transition: all 0.3s;
+            text-align: center;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        input:focus {
+            border-color: #b20710;
+            box-shadow: 0 0 10px rgba(229, 9, 20, 0.3);
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #e50914, #b20710);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1em;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 5px;
+            font-weight: bold;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(229, 9, 20, 0.4);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-success {
+            background: linear-gradient(45deg, #28a745, #20c997);
+        }
+
+        .btn-warning {
+            background: linear-gradient(45deg, #ffc107, #fd7e14);
+        }
+
+        .btn-danger {
+            background: linear-gradient(45deg, #dc3545, #e83e8c);
+        }
+
+        .loading {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255,255,255,0.95);
+            padding: 30px;
+            border-radius: 15px;
+            z-index: 1000;
+            border: 3px solid #e50914;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #e50914;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-weight: bold;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #28a745;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #dc3545;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 2px solid #ffc107;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border: 2px solid #e50914;
+        }
+
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #e50914;
+        }
+
+        .connection-status {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+            z-index: 1001;
+        }
+
+        .connected {
+            background: #28a745;
+            color: white;
+        }
+
+        .disconnected {
+            background: #dc3545;
+            color: white;
+        }
+
+        .hints-section {
+            background: #e8f4f8;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 5px solid #17a2b8;
+        }
+
+        .hint-item {
+            margin: 10px 0;
+            padding: 10px;
+            background: white;
+            border-radius: 5px;
+            text-align: left;
+        }
+
+        .prize-display {
+            background: linear-gradient(45deg, #ffd700, #ffed4e);
+            padding: 25px;
+            border-radius: 15px;
+            margin: 20px 0;
+            border: 3px solid #e50914;
+            color: #333;
+        }
+
+        .winner-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 2px solid #28a745;
+            text-align: left;
+        }
+
+        .contact-info {
+            background: #e8f4f8;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border: 2px solid #17a2b8;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+            
+            .tab-buttons {
+                flex-direction: column;
+            }
+            
+            .letters-display {
+                font-size: 2em;
+                letter-spacing: 10px;
+            }
+            
+            .title {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <div>Đang tải game...</div>
+        </div>
+
+        <h1 class="title">🎮 Game Ghép Chữ NetflixColdbrew</h1>
+        
+        <div class="tab-buttons">
+            <button class="tab-btn active" onclick="switchTab('game')">🎯 Chơi Game</button>
+            <button class="tab-btn" onclick="switchTab('prize')">🎁 Giải Thưởng</button>
+        </div>
+
+        <!-- Tab Chơi Game -->
+        <div id="game" class="tab-content active">
+            <div id="gameContent">
+                <!-- Letters Display -->
+                <div class="letters-display" id="lettersDisplay">P - L - E - A - Q - U</div>
+                
+                <!-- Game Rules -->
+                <div class="game-rules">
+                    <h3>📋 Luật Chơi:</h3>
+                    <ul>
+                        <li>✅ Tìm <strong>TẤT CẢ 8 từ</strong> từ 6 chữ cái: P, L, E, A, Q, U</li>
+                        <li>✅ Mỗi chữ cái chỉ dùng 1 lần trong 1 từ</li>
+                        <li>✅ Từ tối thiểu 3 chữ cái</li>
+                        <li>⚠️ <strong>BẮT BUỘC</strong> phải tìm đủ 8/8 từ để nhận Netflix</li>
+                        <li>❌ Thiếu 1 từ = Không có giải thưởng</li>
+                    </ul>
+                </div>
+
+                <!-- Progress Bar -->
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill">0/8 từ</div>
+                </div>
+
+                <!-- Words Found Grid -->
+                <div class="words-found" id="wordsGrid">
+                    <div class="word-slot" data-word="APE" data-length="3">3 chữ cái</div>
+                    <div class="word-slot" data-word="LEAP" data-length="4">4 chữ cái</div>
+                    <div class="word-slot" data-word="PLEA" data-length="4">4 chữ cái</div>
+                    <div class="word-slot master" data-word="PLAQUE" data-length="6">6 chữ cái 🎯</div>
+                    <div class="word-slot" data-word="PAL" data-length="3">3 chữ cái</div>
+                    <div class="word-slot" data-word="PEA" data-length="3">3 chữ cái</div>
+                    <div class="word-slot" data-word="PALE" data-length="4">4 chữ cái</div>
+                    <div class="word-slot master" data-word="EQUAL" data-length="5">5 chữ cái 🎯</div>
+                </div>
+
+                <!-- Input Section -->
+                <div class="input-group">
+                    <input type="text" id="playerZalo" placeholder="Nhập số Zalo của bạn..." style="margin-bottom: 10px;" maxlength="15" />
+                    <input type="text" id="wordInput" placeholder="Nhập từ bạn tìm được..." maxlength="6" />
+                </div>
+
+                <!-- Buttons -->
+                <button class="btn" onclick="submitWord()">🚀 Gửi Từ</button>
+                <button class="btn btn-danger" onclick="resetGame()">🔄 Làm Lại</button>
+
+                <!-- Hints Section -->
+                <div class="hints-section" id="hintsSection" style="display: none;">
+                    <h3>💡 Gợi Ý:</h3>
+                    <div id="hintsList"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Giải Thưởng -->
+        <div id="prize" class="tab-content">
+            <h2>🏆 Giải Thưởng Netflix Premium</h2>
+            
+            <div class="prize-display">
+                <h3>🎁 Giải Thưởng Duy Nhất (8/8 từ):</h3>
+                <p><strong>💰 Giá trị: 50k</strong></p>
+                <p><strong>⏰ Hạn sử dụng: 30 ngày</strong></p>
+            </div>
+
+            <!-- Winner Info (Hidden until someone wins) -->
+            <div class="winner-info" id="winnerInfo" style="display: none;">
+                <h4>🏆 Người Chiến Thắng:</h4>
+                <div class="contact-info">
+                    <p><strong>📱 Zalo:</strong> <span id="winnerZalo">***</span></p>
+                    <p><strong>⏰ Hoàn thành lúc:</strong> <span id="winnerTime">***</span></p>
+                    <p><strong>🎯 Từ tìm được:</strong> <span id="winnerWords">***</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Biến toàn cục
+        let gameData = null;
+        let foundWords = [];
+        let hintsUsed = 0;
+
+        // Cấu hình JSONBin
+        const JSONBIN_CONFIG = {
+            binId: '6869792a8561e97a50321995', // Thay bằng BinID của bạn
+            apiKey: '$2a$10$ihUU69FzPM.tuVSf6jiUEOxlJM/9yDmbiMwmclO0cc8QDMm4wbfZm' // Thay bằng API Key của bạn
+        };
+
+        // Danh sách từ đúng
+        const TARGET_WORDS = [
+            { word: "APE", length: 3, points: 50, difficulty: "easy" },
+            { word: "LEAP", length: 4, points: 75, difficulty: "easy" },
+            { word: "PLEA", length: 4, points: 75, difficulty: "easy" },
+            { word: "PLAQUE", length: 6, points: 200, difficulty: "expert", isMaster: true },
+            { word: "PAL", length: 3, points: 50, difficulty: "easy" },
+            { word: "PEA", length: 3, points: 50, difficulty: "easy" },
+            { word: "PALE", length: 4, points: 100, difficulty: "medium" },
+            { word: "EQUAL", length: 5, points: 150, difficulty: "hard", isMaster: true }
+        ];
+
+        // Gợi ý
+        const HINTS = [
+            "💡 Gợi ý 1: Có 3 từ 3 chữ cái (APE, PAL, PEA)",
+            "💡 Gợi ý 2: Có 3 từ 4 chữ cái (LEAP, PLEA, PALE)",
+            "💡 Gợi ý 3: Có 1 từ 5 chữ cái nghĩa là 'bằng nhau'",
+            "💡 Gợi ý 4: Từ 6 chữ cái liên quan đến vệ sinh răng miệng"
+        ];
+
+        // Khởi tạo khi trang load
+        window.addEventListener('load', function() {
+            loadGame();
+            
+            // Event listeners
+            document.getElementById('wordInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    submitWord();
+                }
+            });
+            
+            document.getElementById('playerZalo').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    document.getElementById('wordInput').focus();
+                }
+            });
+
+            // Tự động uppercase input và validate Zalo
+            document.getElementById('wordInput').addEventListener('input', function(e) {
+                e.target.value = e.target.value.toUpperCase();
+            });
+
+            // Validate số Zalo (chỉ cho phép số)
+            document.getElementById('playerZalo').addEventListener('input', function(e) {
+                e.target.value = e.target.value.replace(/[^0-9]/g, '');
+            });
+        });
+
+        // Chuyển đổi tab
+        function switchTab(tabName) {
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(content => content.classList.remove('active'));
+            
+            const tabButtons = document.querySelectorAll('.tab-btn');
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+            
+            if (tabName === 'stats') {
+                loadStats();
+            } else if (tabName === 'prize') {
+                displayWinnerInfo();
+            }
+        }
+
+        // Tải dữ liệu game
+        async function loadGame() {
+            showLoading(true);
+            
+            try {
+                const response = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_CONFIG.binId}/latest`, {
+                    headers: {
+                        'X-Master-Key': JSONBIN_CONFIG.apiKey
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Không thể tải dữ liệu');
+                }
+                
+                const data = await response.json();
+                gameData = data.record;
+                
+                displayGame();
+                
+            } catch (error) {
+                console.error('Lỗi tải game:', error);
+                showAlert('Không thể kết nối đến server! Sử dụng dữ liệu offline.', 'error');
+                createOfflineData();
+            }
+            
+            showLoading(false);
+        }
+
+        // Tạo dữ liệu offline
+        function createOfflineData() {
+            gameData = {
+                gameInfo: {
+                    title: "Game Ghép Chữ P-L-E-A-Q-U (Offline Mode)",
+                    description: "Tìm TẤT CẢ 8 từ để nhận Netflix Premium"
+                },
+                puzzle: {
+                    givenLetters: ["P", "L", "E", "A", "Q", "U"],
+                    targetWords: TARGET_WORDS,
+                    foundWords: [],
+                    currentScore: 0,
+                    maxScore: 750
+                },
+                gameStatus: {
+                    isActive: true,
+                    isCompleted: false,
+                    perfectScoreRequired: true
+                },
+                winner: {
+                    hasWinner: false,
+                    playerZalo: null,
+                    completedAt: null,
+                    wordsFound: [],
+                    totalScore: 0,
+                    hintsUsed: 0,
+                    isPerfectScore: false,
+                    qualifiedForPrize: false
+                },
+                prize: {
+                    onlyPrize: {
+                        title: "🏆 Netflix Premium 1 Năm",
+                        netflixAccount: {
+                            email: "wordchampion2025@gmail.com",
+                            password: "PLEAQU8Perfect#2025"
+                        },
+                        netflixCookie: {
+                            cookieString: "NetflixId=v%3D2%26ct%3DBQAOAAEBEF; SecureNetflixId=v%3D2%26mac%3DAQEAEAABABQOmBuLTdCv"
+                        }
+                    }
+                },
+                statistics: {
+                    totalAttempts: 0,
+                    perfectCompletions: 0,
+                    successRate: 0,
+                    averageWordsFound: 0
+                }
+            };
+            
+            displayGame();
+        }
+
+        // Hiển thị game
+        function displayGame() {
+            if (!gameData) return;
+            
+            // Kiểm tra game đã có winner
+            if (gameData.winner.hasWinner) {
+                showGameCompletedMessage();
+                return;
+            }
+            
+            // Reset game state
+            foundWords = [];
+            hintsUsed = 0;
+            
+            updateProgress();
+            updateWordsGrid();
+            
+            // Reset inputs
+            document.getElementById('wordInput').value = '';
+            document.getElementById('playerZalo').value = '';
+            
+            // Ẩn hints
+            document.getElementById('hintsSection').style.display = 'none';
+        }
+
+        // Hiển thị thông báo game đã kết thúc
+        function showGameCompletedMessage() {
+            const gameContent = document.getElementById('gameContent');
+            // Xử lý ẩn số Zalo
+            let zalo = gameData.winner.playerZalo || '***';
+            if (zalo.length >= 10) {
+                zalo = '******' + zalo.slice(-4);
+            }
+            gameContent.innerHTML = `
+                <div style="text-align: center; padding: 30px;">
+                    <h2 style="color: #e50914; font-size: 2.5em; margin-bottom: 20px;">
+                        🎮 Game Đã Kết Thúc
+                    </h2>
+                    
+                    <div style="background: #f8d7da; padding: 25px; border-radius: 15px; margin: 20px 0; border: 3px solid #dc3545;">
+                        <h3 style="color: #721c24;">⏰ Đã có người chiến thắng!</h3>
+                        <p style="font-size: 1.2em; margin: 15px 0;">
+                            Game đã được hoàn thành bởi người chơi đầu tiên.<br>
+                            Netflix Premium đã được trao cho người thắng cuộc.
+                        </p>
+                        
+                        <div style="background: white; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                            <p><strong>🏆 Người thắng:</strong> Zalo ${zalo}</p>
+                            <p><strong>⏰ Hoàn thành lúc:</strong> ${gameData.winner.completedAt ? new Date(gameData.winner.completedAt).toLocaleString('vi-VN') : '***'}</p>
+                            <p><strong>🎯 Từ tìm được:</strong> ${gameData.winner.wordsFound ? gameData.winner.wordsFound.join(', ') : 'Tất cả 8 từ'}</p>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 30px;">
+                        <p style="font-size: 1.1em; color: #666;">
+                            Cảm ơn bạn đã tham gia!<br>
+                            Hãy theo dõi để biết thêm các thử thách mới.
+                        </p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Gửi từ
+        function submitWord() {
+            const wordInput = document.getElementById('wordInput');
+            const playerZaloInput = document.getElementById('playerZalo');
+            
+            const word = wordInput.value.trim().toUpperCase();
+            const playerZalo = playerZaloInput.value.trim();
+            
+            // Validation
+            if (!word) {
+                showAlert('Vui lòng nhập từ!', 'error');
+                return;
+            }
+            
+            if (!playerZalo) {
+                showAlert('Vui lòng nhập số Zalo của bạn!', 'error');
+                playerZaloInput.focus();
+                return;
+            }
+
+            // Validate số Zalo (10-11 số)
+            if (playerZalo.length < 10 || playerZalo.length > 11) {
+                showAlert('Số Zalo không hợp lệ! (10-11 số)', 'error');
+                playerZaloInput.focus();
+                return;
+            }
+            
+            // Kiểm tra từ đã tìm
+            if (foundWords.includes(word)) {
+                showAlert('Bạn đã tìm từ này rồi!', 'warning');
+                wordInput.value = '';
+                return;
+            }
+            
+            // Kiểm tra từ có đúng không
+            const targetWord = TARGET_WORDS.find(t => t.word === word);
+            if (targetWord) {
+                // Từ đúng!
+                foundWords.push(word);
+                showAlert(`🎉 Chính xác! "${word}" (+${targetWord.points} điểm)`, 'success');
+                
+                updateProgress();
+                updateWordsGrid();
+                
+                // Kiểm tra thắng
+                if (foundWords.length === 8) {
+                    endGame(true, playerZalo);
+                }
+                
+                // Milestone messages
+                const milestones = {
+                    2: "🔥 Khởi đầu tốt! Còn 6 từ nữa!",
+                    4: "💪 Đã qua nửa chặng! Còn 4 từ!",
+                    6: "⚡ Gần đến đích rồi! Còn 2 từ khó!",
+                    7: "🎯 Chỉ còn 1 từ cuối cùng! Cố lên!"
+                };
+                
+                if (milestones[foundWords.length]) {
+                    setTimeout(() => {
+                        showAlert(milestones[foundWords.length], 'success');
+                    }, 1000);
+                }
+                
+            } else {
+                // Từ sai
+                showAlert(`❌ "${word}" không phải là từ cần tìm!`, 'error');
+            }
+            
+            wordInput.value = '';
+            wordInput.focus();
+        }
+
+        // Cập nhật progress bar
+        function updateProgress() {
+            const progress = (foundWords.length / 8) * 100;
+            const progressFill = document.getElementById('progressFill');
+            progressFill.style.width = progress + '%';
+            progressFill.textContent = `${foundWords.length}/8 từ`;
+            
+            if (foundWords.length >= 4) {
+                progressFill.style.background = 'linear-gradient(45deg, #ffc107, #fd7e14)';
+            }
+            if (foundWords.length >= 6) {
+                progressFill.style.background = 'linear-gradient(45deg, #28a745, #20c997)';
+            }
+        }
+
+        // Cập nhật lưới từ
+        function updateWordsGrid() {
+            const slots = document.querySelectorAll('.word-slot');
+            slots.forEach(slot => {
+                const word = slot.getAttribute('data-word');
+                if (foundWords.includes(word)) {
+                    slot.classList.add('found');
+                    slot.textContent = word;
+                    
+                    // Thêm định nghĩa
+                    const definitions = {
+                        "APE": "APE 🐵",
+                        "LEAP": "LEAP 🦘", 
+                        "PLEA": "PLEA 🙏",
+                        "PLAQUE": "PLAQUE 🦷",
+                        "PAL": "PAL 👥",
+                        "PEA": "PEA 🟢",
+                        "PALE": "PALE 😰",
+                        "EQUAL": "EQUAL ⚖️"
+                    };
+                    slot.textContent = definitions[word] || word;
+                }
+            });
+        }
+
+        // Hiển thị gợi ý
+        function showHint() {
+            showAlert('Chức năng gợi ý đã bị tắt!', 'warning');
+        }
+
+        // Kết thúc game
+        async function endGame(isWinner, playerZalo) {
+            if (isWinner) {
+                // Người chơi thắng!
+                showAlert('🎉 CHÚC MỪNG! Bạn đã hoàn thành thử thách!', 'success');
+                
+                // Cập nhật dữ liệu winner
+                gameData.winner = {
+                    hasWinner: true,
+                    playerZalo: playerZalo,
+                    completedAt: new Date().toISOString(),
+                    wordsFound: [...foundWords],
+                    totalScore: calculateScore(),
+                    hintsUsed: hintsUsed,
+                    isPerfectScore: true,
+                    qualifiedForPrize: true
+                };
+                
+                gameData.gameStatus.isCompleted = true;
+                gameData.statistics.totalAttempts++;
+                gameData.statistics.perfectCompletions++;
+                
+                // Lưu dữ liệu
+                try {
+                    showLoading(true);
+                    await saveToJsonBin();
+                    showLoading(false);
+                    
+                    showWinnerScreen(playerZalo);
+                    
+                } catch (error) {
+                    console.error('Lỗi lưu dữ liệu:', error);
+                    showAlert('Lỗi lưu dữ liệu! Vui lòng chụp màn hình làm bằng chứng.', 'error');
+                    showWinnerScreen(playerZalo);
+                }
+            }
+        }
+
+        // Tính điểm
+        function calculateScore() {
+            let score = 0;
+            foundWords.forEach(word => {
+                const targetWord = TARGET_WORDS.find(t => t.word === word);
+                if (targetWord) {
+                    score += targetWord.points;
+                }
+            });
+            
+            // Bonus cho hoàn thành
+            if (foundWords.length === 8) {
+                score += 500; // Perfect completion bonus
+            }
+            
+            // Penalty cho hints
+            score -= hintsUsed * 25;
+            
+            return score;
+        }
+
+        // Hiển thị màn hình chiến thắng
+        function showWinnerScreen(playerZalo) {
+            const gameContent = document.getElementById('gameContent');
+            
+            gameContent.innerHTML = `
+                <div style="text-align: center; padding: 30px;">
+                    <h2 style="color: #28a745; font-size: 2.5em; margin-bottom: 20px;">
+                        🏆 CHÚC MỪNG BẠN ĐÃ THẮNG! 🏆
+                    </h2>
+                    
+                    <div style="background: linear-gradient(45deg, #ffd700, #ffed4e); padding: 25px; border-radius: 15px; margin: 20px 0; border: 3px solid #28a745;">
+                        <h3>👑 Người chơi đầu tiên hoàn thành!</h3>
+                        <p><strong>📱 Zalo:</strong> ${playerZalo}</p>
+                        <p><strong>🎯 Từ tìm được:</strong> ${foundWords.join(', ')}</p>
+                        <p><strong>💯 Điểm số:</strong> ${calculateScore()}</p>
+                        <p><strong>💡 Gợi ý sử dụng:</strong> ${hintsUsed}/4</p>
+                        <p><strong>⏰ Hoàn thành lúc:</strong> ${new Date().toLocaleString('vi-VN')}</p>
+                    </div>
+                    
+                    <div style="background: #d4edda; padding: 20px; border-radius: 10px; margin: 20px 0; border: 2px solid #28a745;">
+                        <h3 style="color: #155724;">🎁 Netflix Premium Account</h3>
+                        <p style="color: #155724; font-size: 1.2em; font-weight: bold;">
+                            
+                            📱 Vui lòng liên hệ với admin để nhận tài khoản
+                        </p>
+                        
+                        <div style="background: white; padding: 15px; border-radius: 8px; margin: 15px 0; border: 2px solid #28a745;">
+                            <h4 style="color: #155724;">📦 Bạn sẽ nhận được:</h4>
+                            <ul style="text-align: left; color: #155724;">
+                                <li>📧 Tài khoản Netflix Premium</li>
+                                <li>⏰ Hạn sử dụng: 30 ngày</li>
+                                <li>💰 Trị giá: 50k</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 30px;">
+                        <button class="btn" onclick="loadGame()">🔄 Tải Lại Trang</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Liên hệ hỗ trợ
+        function contactSupport(playerZalo) {
+            const message = `
+🏆 WINNER SUPPORT REQUEST
+
+📱 Zalo: ${playerZalo}
+⏰ Won at: ${new Date().toLocaleString('vi-VN')}
+🎯 Words: ${foundWords.join(', ')}
+💯 Score: ${calculateScore()}
+💡 Hints used: ${hintsUsed}/4
+
+Please send Netflix Premium account details.
+            `.trim();
+            
+            // Copy to clipboard
+            navigator.clipboard.writeText(message).then(() => {
+                showAlert('📋 Thông tin đã được copy! Gửi cho admin để nhận Netflix.', 'success');
+            }).catch(() => {
+                alert('Thông tin winner:\n\n' + message);
+            });
+        }
+
+        // Reset game
+        function resetGame() {
+            if (confirm('Bạn có chắc muốn làm lại? Tiến trình hiện tại sẽ bị mất!')) {
+                foundWords = [];
+                hintsUsed = 0;
+                
+                updateProgress();
+                updateWordsGrid();
+                
+                // Reset inputs
+                document.getElementById('wordInput').value = '';
+                document.getElementById('wordInput').disabled = false;
+                document.querySelector('button[onclick="submitWord()"]').disabled = false;
+                
+                // Ẩn hints
+                document.getElementById('hintsSection').style.display = 'none';
+                document.getElementById('hintsList').innerHTML = '';
+                document.getElementById('hintButton').textContent = '💡 Gợi Ý (4 lần)';
+                document.getElementById('hintButton').style.display = 'inline-block';
+                
+                showAlert('🔄 Game đã được reset!', 'success');
+            }
+        }
+
+        // Lưu dữ liệu lên JSONBin
+        async function saveToJsonBin() {
+            const response = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_CONFIG.binId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Master-Key': JSONBIN_CONFIG.apiKey
+                },
+                body: JSON.stringify(gameData)
+            });
+            
+            if (!response.ok) {
+                throw new Error('Không thể lưu dữ liệu');
+            }
+        }
+
+        // Tải thống kê
+        function loadStats() {
+            if (!gameData) return;
+            
+            document.getElementById('totalAttempts').textContent = gameData.statistics.totalAttempts || 0;
+            document.getElementById('perfectCompletions').textContent = gameData.statistics.perfectCompletions || 0;
+            
+            const successRate = gameData.statistics.totalAttempts > 0 
+                ? Math.round((gameData.statistics.perfectCompletions / gameData.statistics.totalAttempts) * 100)
+                : 0;
+            document.getElementById('successRate').textContent = successRate + '%';
+            
+            document.getElementById('averageWords').textContent = gameData.statistics.averageWordsFound || 0;
+        }
+
+        // Hiển thị thông tin winner
+        function displayWinnerInfo() {
+            if (gameData && gameData.winner.hasWinner) {
+                document.getElementById('winnerInfo').style.display = 'block';
+                // Hiển thị 6 số đầu là * và chỉ 4 số cuối
+                let zalo = gameData.winner.playerZalo || '***';
+                if (zalo.length >= 10) {
+                    zalo = '******' + zalo.slice(-4);
+                }
+                document.getElementById('winnerZalo').textContent = zalo;
+                document.getElementById('winnerTime').textContent = gameData.winner.completedAt 
+                    ? new Date(gameData.winner.completedAt).toLocaleString('vi-VN') 
+                    : '***';
+                document.getElementById('winnerWords').textContent = gameData.winner.wordsFound 
+                    ? gameData.winner.wordsFound.join(', ') 
+                    : 'Tất cả 8 từ';
+            } else {
+                document.getElementById('winnerInfo').style.display = 'none';
+            }
+        }
+
+        // Utility functions
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+        }
+
+        function showAlert(message, type = 'success') {
+            const existingAlert = document.querySelector('.alert');
+            if (existingAlert) {
+                existingAlert.remove();
+            }
+            
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.innerHTML = message;
+            
+            const container = document.querySelector('.container');
+            container.insertBefore(alert, container.firstChild);
+            
+            setTimeout(() => {
+                if (alert.parentNode) {
+                    alert.remove();
+                }
+            }, 5000);
+        }
+
+        function updateConnectionStatus(connected) {
+            // Đã loại bỏ phần trạng thái kết nối
+        }
+
+        // Xử lý khi mất kết nối
+        window.addEventListener('online', function() {
+            updateConnectionStatus(true);
+            loadGame();
+        });
+
+        window.addEventListener('offline', function() {
+            updateConnectionStatus(false);
+        });
+
+        // Xử lý phím tắt
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'r') {
+                e.preventDefault();
+                loadGame();
+            }
+        });
+
+        // Mobile responsive
+        function handleResize() {
+            if (window.innerWidth <= 768) {
+                document.querySelectorAll('.btn').forEach(btn => {
+                    btn.style.width = '100%';
+                    btn.style.marginBottom = '10px';
+                });
+            } else {
+                document.querySelectorAll('.btn').forEach(btn => {
+                    btn.style.width = 'auto';
+                    btn.style.marginBottom = '0';
+                });
+            }
+        }
+
+        window.addEventListener('resize', handleResize);
+        handleResize();
+
+        // Debug
+        window.debugInfo = function() {
+            console.log('Game Data:', gameData);
+            console.log('Found Words:', foundWords);
+            console.log('Hints Used:', hintsUsed);
+        };
+
+        console.log('🎮 Game Ghép Chữ đã khởi tạo!');
+        console.log('📝 Gõ debugInfo() để xem thông tin debug');
+    </script>
+</body>
+</html>
